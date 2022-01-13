@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+
 
 class Panorama 
 {
@@ -13,8 +15,11 @@ class Panorama
     this.createScene()
     this.createCamera()
     this.createRenderer()
+    this.creteOrbitControler()
 
     this.loop()
+
+    window.addEventListener('resize', this.onWindowResize.bind(this))
   }
 
   createScene(){
@@ -26,10 +31,9 @@ class Panorama
   }
 
   createCamera(){
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 10, 1000)
+    const camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 100)
 
-    camera.position.set(80, 80, 80)
-    camera.lookAt(this.three.scene.position)
+    camera.position.z = 0.01
 
     this.three.camera = camera
   }
@@ -45,12 +49,34 @@ class Panorama
     this.three.renderer = renderer
   }
 
+  creteOrbitControler(){
+    const { camera, renderer } = this.three
+    const controler = new OrbitControls(camera, renderer.domElement)
+
+    controler.enableZoom = false
+    controler.enablePan = false
+    controler.enableDamping = true
+    controler.rotateSpeed = - 0.25
+
+    this.three.controler = controler
+  }
+
   loop(){
-    const { scene, camera, renderer } = this.three
+    const { scene, camera, renderer, controler } = this.three
 
     window.requestAnimationFrame(this.loop.bind(this))
 
+    controler.update()
     renderer.render(scene, camera)
+  }
+
+  onWindowResize(){
+    const { camera, renderer } = this.three
+
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+
+    renderer.setSize(window.innerWidth, window.innerHeight)
   }
 }
 
